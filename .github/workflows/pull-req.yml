@@ -12,7 +12,9 @@
 
 name: PulReq
 
-on: [pull_request]
+on:
+    repository_dispatch:
+        types: [pull-req.yml]
 
 jobs:
   build:
