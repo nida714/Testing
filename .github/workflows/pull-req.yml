@@ -1,0 +1,29 @@
+# It is possible to to this by checking out individual commits and building each one in a single run: step.
+
+# In order to do this, the fetch-depth option for the checkout action needs to be 0 to checkout the full git tree.
+
+# I did something like this using GitPython to iterate and checkout each commit.
+
+# Using just the git command line tool, the rev-list command could be used to create a list of commits.
+
+# The tricky part is figuring out the commit range. For pull requests, GitHub actions provides github.head_ref and github.base_ref properties (docs) that could be used to create the commit range. However, these properties are not available for other events, like push (in that case, github.ref could be used with a fixed branch name like origin/main).
+
+# Here is a simple example. It may need more a advanced query for rev-list to handle cases where base_ref is not an ancestor of head_ref, but I will leave that for other SO questions to answer.
+
+name: PulReq
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - run: |
+          for commit in $(git rev-list ${{ github.base_ref }}..${{ github.head_ref }}); do
+              git checkout $commit
+              echo "run test"
+          done
